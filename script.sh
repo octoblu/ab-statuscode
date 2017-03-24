@@ -126,7 +126,7 @@ main(){
       exit 0
     fi
     debug "hitting up \"$url\" $n times"
-    ab -n "$n" -c "$n" -k "$url/"
+    ab -n "$n" -c "$n" -k "$url/" || continue
     debug "sleeping for $delay"
     sleep "$delay"
   done

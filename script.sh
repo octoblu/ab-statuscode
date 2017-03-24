@@ -71,6 +71,7 @@ usage(){
   echo '  DEBUG            print debug output'
   echo '  N                number of requests'
   echo '  URL              the URL to hit up'
+  echo '  DELAY_SECONDS    time between ab tests'
   echo ''
 }
 
@@ -85,21 +86,8 @@ version(){
   fi
 }
 
-do_test(){
-  local n="$1"
-  local url="$2"
-
-  for i in $(seq 1 "$n"); do
-    debug "running $i"
-    curl --silent -I "$url"
-    if [ "$DIE_NOW" == 'true' ]; then
-      exit 0
-    fi
-  done
-}
-
-main() {
-  local n url
+main(){
+  local n url delay
   # Define args up here
   while [ "$1" != "" ]; do
     local param="$1"
@@ -126,22 +114,21 @@ main() {
 
   url="$URL"
   n="$N"
+  delay="$DELAY_SECONDS"
 
   n=${n:-1000}
+  delay=${delay:-100}
 
   assert_required_params "$url"
-
 
   while true; do
     if [ "$DIE_NOW" == 'true' ]; then
       exit 0
     fi
     debug "hitting up \"$url\" $n times"
-    do_test "$n" "$url" \
-    | grep --line-buffered 'HTTP/1' \
-    | grep --line-buffered --invert-match '200'
-    debug 'sleeping for 10 seconds'
-    sleep 10
+    ab -n "$n" -c "$n" -k "$url/"
+    debug "sleeping for $delay"
+    sleep "$delay"
   done
 }
 
